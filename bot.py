@@ -2,8 +2,8 @@ import os
 import logging
 import json
 import random
-import pytz
 import datetime as dt
+from zoneinfo import ZoneInfo
 
 # dotenv to parse environment variables
 import dotenv
@@ -50,10 +50,16 @@ async def cake(ctx):
     if msg != "":
         await ctx.send(msg)
 
-# utc = dt.timezone.utc
-tz = pytz.timezone("CET")
+# target timezone
+tz = ZoneInfo("Europe/Berlin")
 
-# If no tzinfo is given then UTC is assumed.
+# convert to system time
+# pizza_time = dt.datetime.now("Europe/Berlin").replace(hour=9, minute=0, second=0).astimezone()
+# logger.info("Pizza Time: %s", pizza_time)
+
+# attendance_time = dt.datetime.now(tz).replace(hour=9, minute=0, second=0).astimezone()
+# logger.info("Attendance Time: %s", attendance_time)
+
 pizza_time = dt.time(hour=9, tzinfo=tz)
 attendance_time = dt.time(hour=9, tzinfo=tz)
 
@@ -63,6 +69,7 @@ class PizzaCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        logger.info("starting pizza task")
         self.pizza_task.start()
 
     def cog_unload(self):
@@ -102,6 +109,7 @@ class AttendanceCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        logger.info("starting attendance task")
         self.attendance_task.start()
 
     def cog_unload(self):
@@ -113,11 +121,11 @@ class AttendanceCog(commands.Cog):
         monday = 0
         now = dt.datetime.now(tz)
 
-        if not dt.datetime.weekday(now) == monday:
+        if dt.datetime.weekday(now) == monday:
             await self.check_attendance()
 
     async def check_attendance(self):
-        logger.info("Checking Attendance")
+        logger.info("checking attendance")
 
         duration = dt.timedelta(hours=10)
 
@@ -127,7 +135,7 @@ class AttendanceCog(commands.Cog):
             duration=duration
         )
 
-        attendance_poll.add_answer(text="will be there!", emoji="\N{white heavy check mark}")
+        attendance_poll.add_answer(text="will be there!", emoji="\N{heavy large circle}")
         attendance_poll.add_answer(text="won't join today!", emoji="\N{cross mark}")
 
         channel = self.bot.get_channel(MAIN_CHANNEL)
