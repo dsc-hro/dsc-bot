@@ -130,7 +130,7 @@ class AttendanceCog(commands.Cog):
     async def attendance_task(self):
         now = dt.datetime.now(tz)
 
-        if dt.datetime.weekday(now) == WeekDay.TUESDAY:
+        if dt.datetime.weekday(now) == WeekDay.WEDNESDAY:
             await self.check_attendance()
 
     async def check_attendance(self):
