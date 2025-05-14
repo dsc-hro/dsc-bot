@@ -99,7 +99,7 @@ class PizzaCog(commands.Cog):
         # check if its monday
         now = dt.datetime.now(tz)
 
-        if dt.datetime.weekday(now) == WeekDay.WEDNESDAY:
+        if dt.datetime.weekday(now) == WeekDay.TUESDAY:
             await self.pizza_poll()
 
     async def pizza_poll(self):
@@ -136,7 +136,7 @@ class AttendanceCog(commands.Cog):
     async def attendance_task(self):
         now = dt.datetime.now(tz)
 
-        if dt.datetime.weekday(now) == WeekDay.WEDNESDAY:
+        if dt.datetime.weekday(now) == WeekDay.TUESDAY:
             await self.check_attendance()
 
     async def check_attendance(self):
