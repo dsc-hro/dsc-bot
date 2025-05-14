@@ -33,7 +33,11 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD = int(os.getenv("GUILD"))
 MAIN_CHANNEL = int(os.getenv("MAIN_CHANNEL"))
 PIZZA_CHANNEL = int(os.getenv("PIZZA_CHANNEL"))
-APP_ID = int(os.getenv("APP_ID"))
+PIZZA_VEGAN = json.loads(os.getenv("PIZZA_VEGAN")) # list of emojis
+PIZZA_VEGETARIAN = json.loads(os.getenv("PIZZA_VEGETARIAN")) # list of emojis
+PIZZA_CARNIVORE = json.loads(os.getenv("PIZZA_CARNIVORE")) # list of emojis
+PIZZA_REFUSE = json.loads(os.getenv("PIZZA_REFUSE")) # list of emojis
+DEBUG = os.getenv("DEBUG") in ["True", "true", "1"] # parse to bool
 
 # prefix for bot commands
 BOT_PREFIX = "$"
@@ -41,6 +45,9 @@ BOT_PREFIX = "$"
 intents = discord.Intents.default()
 
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
+
+pizzagog = None
+attendancecog = None
 
 
 @bot.hybrid_command(name="cake", description="Definitely not a lie!")
@@ -92,7 +99,7 @@ class PizzaCog(commands.Cog):
         # check if its monday
         now = dt.datetime.now(tz)
 
-        if dt.datetime.weekday(now) == WeekDay.WEDNESDAY:
+        if dt.datetime.weekday(now) == WeekDay.TUESDAY:
             await self.pizza_poll()
 
     async def pizza_poll(self):
@@ -106,14 +113,13 @@ class PizzaCog(commands.Cog):
             duration=duration
         )
 
-        pizza_poll.add_answer(text="Vegan", emoji="\N{pineapple}")
-        pizza_poll.add_answer(text="Vegetarian", emoji="\N{cheese wedge}")
-        pizza_poll.add_answer(text="Carnivore", emoji="\N{bacon}")
-        pizza_poll.add_answer(text="But I refuse!", emoji="\N{face with no good gesture}")
+        pizza_poll.add_answer(text="Vegan", emoji=random.choice(PIZZA_VEGAN))
+        pizza_poll.add_answer(text="Vegetarian", emoji=random.choice(PIZZA_VEGETARIAN))
+        pizza_poll.add_answer(text="Carnivore", emoji=random.choice(PIZZA_CARNIVORE))
+        pizza_poll.add_answer(text="But I refuse!", emoji=random.choice(PIZZA_REFUSE))
 
         channel = self.bot.get_channel(PIZZA_CHANNEL)
         await channel.send(poll=pizza_poll)
-
 
 class AttendanceCog(commands.Cog):
     """Checks Attendance once per Week."""
@@ -130,7 +136,7 @@ class AttendanceCog(commands.Cog):
     async def attendance_task(self):
         now = dt.datetime.now(tz)
 
-        if dt.datetime.weekday(now) == WeekDay.WEDNESDAY:
+        if dt.datetime.weekday(now) == WeekDay.TUESDAY:
             await self.check_attendance()
 
     async def check_attendance(self):
@@ -151,19 +157,34 @@ class AttendanceCog(commands.Cog):
         await channel.send(poll=attendance_poll)
 
 
+
+if DEBUG:
+    @bot.hybrid_command(name="test", description="Test command")
+    async def cake(ctx):
+        """test command"""
+        await pizzagog.pizza_poll()
+        await attendancecog.check_attendance()
+
 @bot.event
 async def on_ready():
     logger.info(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    # add tasks to the bot
-    await bot.add_cog(PizzaCog(bot))
-    await bot.add_cog(AttendanceCog(bot))
+    global pizzagog
+    global attendancecog
+    pizzagog = PizzaCog(bot)
+    attendancecog = AttendanceCog(bot)
     logger.info("Sync Command Tree")
     await bot.tree.sync()
     logger.info("Ready!")
+    if DEBUG:
+        logger.debug("Debug Mode is enabled!")
+        await pizzagog.pizza_poll()
+        await attendancecog.check_attendance()
 
 if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler())
     logger.addHandler(logging.FileHandler("bot.log"))
     logger.setLevel(logging.INFO)
+    if(DEBUG):
+        logger.setLevel(logging.DEBUG)
 
     bot.run(TOKEN)
