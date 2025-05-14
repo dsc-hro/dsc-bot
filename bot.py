@@ -3,7 +3,9 @@ import logging
 import json
 import random
 import datetime as dt
+
 from zoneinfo import ZoneInfo
+from enum import IntEnum
 
 # dotenv to parse environment variables
 import dotenv
@@ -67,12 +69,22 @@ tz = ZoneInfo("Europe/Berlin")
 # attendance_time = dt.datetime.now(tz).replace(hour=9, minute=0, second=0).astimezone()
 # logger.info("Attendance Time: %s", attendance_time)
 
-pizza_time = dt.time(hour=9, tzinfo=tz)
-attendance_time = dt.time(hour=9, tzinfo=tz)
+pizza_time = dt.time(hour=16, tzinfo=tz)
+attendance_time = dt.time(hour=16, tzinfo=tz)
+
+
+class WeekDay(IntEnum):
+    MONDAY = 0
+    TUESDAY = 1
+    WEDNESDAY = 2
+    THURSDAY = 3
+    FRIDAY = 4
+    SATURDAY = 5
+    SUNDAY = 6
 
 
 class PizzaCog(commands.Cog):
-    """Runs a Pizza Poll every Monday."""
+    """Runs a Pizza Poll once per Week."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -85,16 +97,15 @@ class PizzaCog(commands.Cog):
     @tasks.loop(time=pizza_time)
     async def pizza_task(self):
         # check if its monday
-        monday = 0
         now = dt.datetime.now(tz)
 
-        if dt.datetime.weekday(now) == monday:
+        if dt.datetime.weekday(now) == WeekDay.WEDNESDAY:
             await self.pizza_poll()
 
     async def pizza_poll(self):
         logger.info("Here is the pizza pollice!")
 
-        duration = dt.timedelta(hours=11)
+        duration = dt.timedelta(hours=1)
 
         pizza_poll = discord.Poll(
             question="Ding dong, here is the Pizza-Pollice from Pizzapolis!",
@@ -111,7 +122,7 @@ class PizzaCog(commands.Cog):
         await channel.send(poll=pizza_poll)
 
 class AttendanceCog(commands.Cog):
-    """Checks Attendance every Monday."""
+    """Checks Attendance once per Week."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -123,26 +134,24 @@ class AttendanceCog(commands.Cog):
 
     @tasks.loop(time=attendance_time)
     async def attendance_task(self):
-        # check if its monday
-        monday = 0
         now = dt.datetime.now(tz)
 
-        if dt.datetime.weekday(now) == monday:
+        if dt.datetime.weekday(now) == WeekDay.WEDNESDAY:
             await self.check_attendance()
 
     async def check_attendance(self):
         logger.info("checking attendance")
 
-        duration = dt.timedelta(hours=10)
+        duration = dt.timedelta(hours=1)
 
         attendance_poll = discord.Poll(
-            question="Data is calling! My A.T.T.E.N.D.A.N.C.E module predicts that you:",
+            question="Data is calling! Will you attend DSC today?",
             multiple=False,
             duration=duration
         )
 
-        attendance_poll.add_answer(text="will be there!", emoji="\N{heavy large circle}")
-        attendance_poll.add_answer(text="won't join today!", emoji="\N{cross mark}")
+        attendance_poll.add_answer(text="Yes", emoji="\N{heavy large circle}")
+        attendance_poll.add_answer(text="No", emoji="\N{cross mark}")
 
         channel = self.bot.get_channel(MAIN_CHANNEL)
         await channel.send(poll=attendance_poll)
