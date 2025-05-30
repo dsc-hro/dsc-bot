@@ -23,10 +23,23 @@ try:
     with open("portal_glados_lines.json", "r") as f:
         responses = json.load(f)
 except FileNotFoundError:
-    logger.warn("Couldn't find quotes file!")
+    logger.warning("Couldn't find quotes file!")
 
 # parse secrets from .env file
 dotenv.load_dotenv()
+
+
+class WeekDay(IntEnum):
+    MONDAY = 0
+    TUESDAY = 1
+    WEDNESDAY = 2
+    THURSDAY = 3
+    FRIDAY = 4
+    SATURDAY = 5
+    SUNDAY = 6
+
+
+DSC_DAY = WeekDay.TUESDAY
 
 # get secrets: while token is str, parse ids to int
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -66,16 +79,6 @@ pizza_time = dt.time(hour=16, tzinfo=tz)
 attendance_time = dt.time(hour=16, tzinfo=tz)
 
 
-class WeekDay(IntEnum):
-    MONDAY = 0
-    TUESDAY = 1
-    WEDNESDAY = 2
-    THURSDAY = 3
-    FRIDAY = 4
-    SATURDAY = 5
-    SUNDAY = 6
-
-
 class PizzaCog(commands.Cog):
     """Runs a Pizza Poll once per Week."""
 
@@ -83,6 +86,14 @@ class PizzaCog(commands.Cog):
         self.bot = bot
         logger.info("starting pizza task")
         self.pizza_task.start()
+
+        # will choose a random emoji for each poll option from this dict
+        self.emojis = {
+            "vegan": ["\N{pineapple}", "\N{potato}", "\N{carrot}", "\N{broccoli}", "\N{cactus}"],
+            "vegetarian": ["\N{cheese wedge}", "\N{egg}", "\N{baby bottle}"],
+            "carnivore": ["\N{bacon}", "\N{hatching chick}", "\N{pig face}"],
+            "nothing": ["\N{face with no good gesture}", "\N{cross mark}", "\N{no entry}"]
+        }
 
     def cog_unload(self):
         self.pizza_task.cancel()
@@ -92,7 +103,7 @@ class PizzaCog(commands.Cog):
         # check if its monday
         now = dt.datetime.now(tz)
 
-        if dt.datetime.weekday(now) == WeekDay.WEDNESDAY:
+        if dt.datetime.weekday(now) == DSC_DAY:
             await self.pizza_poll()
 
     async def pizza_poll(self):
@@ -106,10 +117,10 @@ class PizzaCog(commands.Cog):
             duration=duration
         )
 
-        pizza_poll.add_answer(text="Vegan", emoji="\N{pineapple}")
-        pizza_poll.add_answer(text="Vegetarian", emoji="\N{cheese wedge}")
-        pizza_poll.add_answer(text="Carnivore", emoji="\N{bacon}")
-        pizza_poll.add_answer(text="But I refuse!", emoji="\N{face with no good gesture}")
+        pizza_poll.add_answer(text="Vegan", emoji=random.choice(self.emojis["vegan"]))
+        pizza_poll.add_answer(text="Vegetarian", emoji=random.choice(self.emojis["vegetarian"]))
+        pizza_poll.add_answer(text="Carnivore", emoji=random.choice(self.emojis["carnivore"]))
+        pizza_poll.add_answer(text="But I refuse!", emoji=random.choice(self.emojis["nothing"]))
 
         channel = self.bot.get_channel(PIZZA_CHANNEL)
         await channel.send(poll=pizza_poll)
@@ -130,7 +141,7 @@ class AttendanceCog(commands.Cog):
     async def attendance_task(self):
         now = dt.datetime.now(tz)
 
-        if dt.datetime.weekday(now) == WeekDay.WEDNESDAY:
+        if dt.datetime.weekday(now) == DSC_DAY:
             await self.check_attendance()
 
     async def check_attendance(self):
