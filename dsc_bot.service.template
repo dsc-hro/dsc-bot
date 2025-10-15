@@ -1,0 +1,12 @@
+[Unit]
+Description=DSC Bot
+After=network.target docker.target
+# optional: if you want the service to run only on a specific host
+# ConditionHost=${HOST_NAME}
+
+[Service]
+WorkingDirectory=${WORKING_DIRECTORY}
+ExecStart=${EXEC_START}
+
+[Install]
+WantedBy=default.target

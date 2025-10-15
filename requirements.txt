@@ -1,5 +1,4 @@
 # to parse secrets from .env files
 python-dotenv
 # discord.py 2.4 adds support for polls
-discord.py==2.4
-
+discord.py>=2.4

@@ -14,6 +14,7 @@ WORKDIR /home/bot/app
 
 COPY requirements.txt .
 COPY bot.py .
+COPY config.json .
 COPY portal_glados_lines.json .
 
 RUN pip install -r requirements.txt

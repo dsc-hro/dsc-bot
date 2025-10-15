@@ -1,13 +1,15 @@
-import json
-from html.parser import HTMLParser
-from argparse import ArgumentParser
-from pathlib import Path
-from urllib import request
+#!/usr/bin/env bash
 
 """
 Simple HTML Parser to extract GladOS voice lines from the Portal Wiki.
 """
 
+import json
+
+from html.parser import HTMLParser
+from argparse import ArgumentParser
+from pathlib import Path
+from urllib import request
 
 portal_wiki_url = "https://theportalwiki.com/wiki/GLaDOS_voice_lines_(Portal)"
 
@@ -39,7 +41,7 @@ class PortalParser(HTMLParser):
 
 
 if __name__ == "__main__":
-    arg_parser = ArgumentParser()
+    arg_parser = ArgumentParser(description="parse GlaDOS voice lines from portal wiki")
 
     # arg_parser.add_argument("input", type=Path)
     args = arg_parser.parse_args()
