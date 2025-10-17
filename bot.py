@@ -66,6 +66,7 @@ def read_config(path) -> Config:
 
 CONFIG = read_config("config.json")
 DSC_TIME = dt.time.fromisoformat(CONFIG.dsc_poll_time)
+DSC_TIME = dt.time.replace(DSC_TIME, tzinfo=ZoneInfo(CONFIG.dsc_tz))
 
 
 def read_secrets():
