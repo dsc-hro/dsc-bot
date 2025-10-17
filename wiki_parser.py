@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
 """
 Simple HTML Parser to extract GladOS voice lines from the Portal Wiki.

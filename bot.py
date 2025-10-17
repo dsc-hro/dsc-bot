@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
 """
 Discord bot for the Data Science Club Rostock.
