@@ -54,7 +54,8 @@ class Config:
     dsc_time: str = "17:00"
 
     dsc_poll_weekday: int = 1
-    dsc_poll_time: str = "16:00"
+    dsc_poll_time: str = "09:00"
+    dsc_poll_duration: int = 8,
     dsc_tz: str = "Europe/Berlin"
 
 
@@ -65,8 +66,12 @@ def read_config(path) -> Config:
 
 
 CONFIG = read_config("config.json")
-DSC_TIME = dt.time.fromisoformat(CONFIG.dsc_poll_time)
+
+DSC_TIME = dt.time.fromisoformat(CONFIG.dsc_time)
 DSC_TIME = dt.time.replace(DSC_TIME, tzinfo=ZoneInfo(CONFIG.dsc_tz))
+
+DSC_POLL_TIME = dt.time.fromisoformat(CONFIG.dsc_poll_time)
+DSC_POLL_TIME = dt.time.replace(DSC_POLL_TIME, tzinfo=ZoneInfo(CONFIG.dsc_tz))
 
 
 def read_secrets():
@@ -133,7 +138,7 @@ class PizzaPollCog(commands.Cog):
     def cog_unload(self):
         return self.post_pizza_poll_task.cancel()
 
-    @tasks.loop(time=DSC_TIME)
+    @tasks.loop(time=DSC_POLL_TIME)
     async def post_pizza_poll_task(self):
         now = dt.datetime.now()
         if dt.datetime.weekday(now) != CONFIG.dsc_poll_weekday:
@@ -141,7 +146,7 @@ class PizzaPollCog(commands.Cog):
 
         logger.info("posting pizza poll")
 
-        duration = dt.timedelta(hours=1)
+        duration = dt.timedelta(hours=CONFIG.dsc_poll_duration)
 
         pizza_poll = discord.Poll(
             question="Ding dong, here is the Pizza-Pollice from Pizzapolis!",
@@ -173,7 +178,7 @@ class AttendancePollCog(commands.Cog):
     def cog_unload(self):
         self.post_attendance_poll_task.cancel()
 
-    @tasks.loop(time=DSC_TIME)
+    @tasks.loop(time=DSC_POLL_TIME)
     async def post_attendance_poll_task(self):
         now = dt.datetime.now()
         if dt.datetime.weekday(now) != CONFIG.dsc_poll_weekday:
@@ -181,7 +186,7 @@ class AttendancePollCog(commands.Cog):
 
         logger.info("posting attendance poll")
 
-        duration = dt.timedelta(hours=1)
+        duration = dt.timedelta(hours=CONFIG.dsc_poll_duration)
 
         attendance_poll = discord.Poll(
             question="Data is calling! Will you attend DSC today?",

@@ -6,7 +6,7 @@
 # docker start dsc_bot
 
 # build dsc bot image
-docker build -t dsc-bot .
+docker build -t bot-dsc .
 
 # run image as container
-docker run -d --env-file .env dsc-bot
+docker run -d --env-file .env bot-dsc

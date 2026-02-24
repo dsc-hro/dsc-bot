@@ -2,6 +2,7 @@
     "dsc_weekday": 1,
     "dsc_time": "17:00",
     "dsc_poll_weekday": 1,
-    "dsc_poll_time": "16:00",
+    "dsc_poll_time": "09:00",
+    "dsc_poll_duration": 8,
     "dsc_tz": "Europe/Berlin"
 }
